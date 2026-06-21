@@ -10,24 +10,28 @@ import (
 
 type Direction struct {
 	Pipe           int     `json:"pipe"`
+	MinimumMbps    float64 `json:"minimum_mbps"`
+	BaselineMbps   float64 `json:"baseline_mbps"`
+	MaximumMbps    float64 `json:"maximum_mbps"`
 	CurrentMbps    float64 `json:"current_mbps"`
 	ThroughputMbps float64 `json:"throughput_mbps"`
 	State          string  `json:"state"`
 }
 
 type Status struct {
-	Version          string    `json:"version"`
-	UpdatedAt        time.Time `json:"updated_at"`
-	StartedAt        time.Time `json:"started_at"`
-	Mode             string    `json:"mode"`
-	WANInterface     string    `json:"wan_interface"`
-	Download         Direction `json:"download"`
-	Upload           Direction `json:"upload"`
-	BaselineRTTMs    float64   `json:"baseline_rtt_ms"`
-	CurrentRTTMs     float64   `json:"current_rtt_ms"`
-	DelayDeltaMs     float64   `json:"delay_delta_ms"`
-	HealthyReflector int       `json:"healthy_reflectors"`
-	LastReason       string    `json:"last_reason"`
+	Version          string     `json:"version"`
+	UpdatedAt        time.Time  `json:"updated_at"`
+	StartedAt        time.Time  `json:"started_at"`
+	Mode             string     `json:"mode"`
+	WANInterface     string     `json:"wan_interface"`
+	Download         Direction  `json:"download"`
+	Upload           Direction  `json:"upload"`
+	BaselineRTTMs    float64    `json:"baseline_rtt_ms"`
+	CurrentRTTMs     float64    `json:"current_rtt_ms"`
+	DelayDeltaMs     float64    `json:"delay_delta_ms"`
+	HealthyReflector int        `json:"healthy_reflectors"`
+	LastAdjustmentAt *time.Time `json:"last_adjustment_at,omitempty"`
+	LastReason       string     `json:"last_reason"`
 }
 
 func WriteAtomic(path string, value Status) error {

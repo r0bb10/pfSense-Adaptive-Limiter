@@ -30,6 +30,7 @@ stage() {
 		"${STAGE}${PREFIX}/etc/rc.d" \
 		"${STAGE}${PREFIX}/pkg" \
 		"${STAGE}${PREFIX}/www" \
+		"${STAGE}${PREFIX}/www/widgets/widgets" \
 		"${STAGE}${PREFIX}/share/${PORTNAME}" \
 		"${STAGE}/etc/inc/priv"
 
@@ -38,6 +39,7 @@ stage() {
 	install -m 0644 "${FILES}${PREFIX}/pkg/adaptive-limiter.xml" "${STAGE}${PREFIX}/pkg/adaptive-limiter.xml"
 	install -m 0644 "${FILES}${PREFIX}/pkg/adaptive-limiter.inc" "${STAGE}${PREFIX}/pkg/adaptive-limiter.inc"
 	install -m 0644 "${FILES}${PREFIX}/www/status_adaptive_limiter.php" "${STAGE}${PREFIX}/www/status_adaptive_limiter.php"
+	install -m 0644 "${FILES}${PREFIX}/www/widgets/widgets/adaptive_limiter.widget.php" "${STAGE}${PREFIX}/www/widgets/widgets/adaptive_limiter.widget.php"
 	install -m 0644 "${FILES}${PREFIX}/share/${PORTNAME}/info.xml" "${STAGE}${PREFIX}/share/${PORTNAME}/info.xml"
 	install -m 0644 "${FILES}/etc/inc/priv/adaptive-limiter.priv.inc" "${STAGE}/etc/inc/priv/adaptive-limiter.priv.inc"
 
@@ -77,6 +79,7 @@ pkg/adaptive-limiter.xml
 sbin/adaptive-limiterd
 share/pfSense-pkg-adaptive-limiter/info.xml
 www/status_adaptive_limiter.php
+www/widgets/widgets/adaptive_limiter.widget.php
 @dir /etc/inc/priv
 @dir /etc/inc
 EOF
