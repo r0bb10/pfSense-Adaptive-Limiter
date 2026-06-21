@@ -87,13 +87,15 @@
 		<field>
 			<fielddescr>Reflectors</fielddescr>
 			<fieldname>reflectors</fieldname>
-			<description>Comma-separated IPv4 or IPv6 addresses used for latency probes.</description>
+			<description>Comma-separated IPv4 addresses used for latency probes.</description>
 			<type>input</type>
 			<default_value>1.1.1.1,1.0.0.1,9.9.9.9,8.8.8.8</default_value>
 			<required/>
 		</field>
 		<field><fielddescr>Latency Threshold (ms)</fielddescr><fieldname>latency_threshold</fieldname><type>input</type><default_value>15</default_value><required/></field>
 		<field><fielddescr>Sample Interval</fielddescr><fieldname>sample_interval</fieldname><description>Go duration, for example 1s.</description><type>input</type><default_value>1s</default_value><required/></field>
+		<field><fielddescr>Probe Interval</fielddescr><fieldname>probe_interval</fieldname><description>Delay between staggered reflector probes.</description><type>input</type><default_value>250ms</default_value><required/></field>
+		<field><fielddescr>Probe Timeout</fielddescr><fieldname>probe_timeout</fieldname><description>Maximum time to wait for an ICMP response.</description><type>input</type><default_value>1s</default_value><required/></field>
 		<field><fielddescr>Adjustment Delay</fielddescr><fieldname>adjustment_delay</fieldname><description>Minimum duration between limiter changes.</description><type>input</type><default_value>2s</default_value><required/></field>
 	</fields>
 	<custom_php_install_command>adaptive_limiter_install();</custom_php_install_command>

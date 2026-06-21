@@ -30,6 +30,8 @@ type Config struct {
 	Reflectors       []string  `json:"reflectors"`
 	LatencyThreshold float64   `json:"latency_threshold_ms"`
 	SampleInterval   Duration  `json:"sample_interval"`
+	ProbeInterval    Duration  `json:"probe_interval"`
+	ProbeTimeout     Duration  `json:"probe_timeout"`
 	AdjustmentDelay  Duration  `json:"adjustment_delay"`
 	StatusPath       string    `json:"status_path"`
 }
@@ -93,8 +95,9 @@ func (c Config) Validate() error {
 		return errors.New("at least one reflector is required")
 	}
 	for _, reflector := range c.Reflectors {
-		if net.ParseIP(reflector) == nil {
-			return fmt.Errorf("invalid reflector IP address %q", reflector)
+		ip := net.ParseIP(reflector)
+		if ip == nil || ip.To4() == nil {
+			return fmt.Errorf("invalid IPv4 reflector address %q", reflector)
 		}
 	}
 	if c.LatencyThreshold <= 0 || c.LatencyThreshold > 1000 {
@@ -102,6 +105,12 @@ func (c Config) Validate() error {
 	}
 	if c.SampleInterval.Duration < 200*time.Millisecond || c.SampleInterval.Duration > time.Minute {
 		return errors.New("sample interval must be between 200ms and 1m")
+	}
+	if c.ProbeInterval.Duration < 100*time.Millisecond || c.ProbeInterval.Duration > 10*time.Second {
+		return errors.New("probe interval must be between 100ms and 10s")
+	}
+	if c.ProbeTimeout.Duration < 100*time.Millisecond || c.ProbeTimeout.Duration > 10*time.Second {
+		return errors.New("probe timeout must be between 100ms and 10s")
 	}
 	if c.AdjustmentDelay.Duration < c.SampleInterval.Duration || c.AdjustmentDelay.Duration > 10*time.Minute {
 		return errors.New("adjustment delay must be at least the sample interval and no more than 10m")

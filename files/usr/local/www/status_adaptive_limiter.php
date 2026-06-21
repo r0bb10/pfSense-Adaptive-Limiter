@@ -46,7 +46,18 @@ include('head.inc');
 				<tr><th><?=gettext('Latency')?></th><td id="al-latency">-</td></tr>
 				<tr><th><?=gettext('Healthy Reflectors')?></th><td id="al-reflectors">-</td></tr>
 				<tr><th><?=gettext('Last Decision')?></th><td id="al-reason">-</td></tr>
+				<tr><th><?=gettext('Last Error')?></th><td id="al-error">-</td></tr>
 			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="panel panel-default">
+	<div class="panel-heading"><h2 class="panel-title"><?=gettext('Reflectors')?></h2></div>
+	<div class="panel-body table-responsive">
+		<table class="table table-striped table-condensed">
+			<thead><tr><th><?=gettext('Address')?></th><th><?=gettext('Health')?></th><th><?=gettext('RTT')?></th><th><?=gettext('Baseline')?></th><th><?=gettext('Delta')?></th><th><?=gettext('Last Error')?></th></tr></thead>
+			<tbody id="al-reflector-list"><tr><td colspan="6">-</td></tr></tbody>
 		</table>
 	</div>
 </div>
@@ -69,11 +80,31 @@ async function refreshAdaptiveLimiter() {
 		alText('al-mode', data.mode);
 		alText('al-interface', data.wan_interface);
 		alText('al-updated', data.updated_at);
-		alText('al-download', `${data.download.current_mbps.toFixed(1)} Mb/s, pipe ${data.download.pipe}, ${data.download.state}`);
-		alText('al-upload', `${data.upload.current_mbps.toFixed(1)} Mb/s, pipe ${data.upload.pipe}, ${data.upload.state}`);
+		alText('al-download', `${data.download.current_mbps.toFixed(1)} / ${data.download.maximum_mbps.toFixed(1)} Mb/s; traffic ${data.download.throughput_mbps.toFixed(1)} Mb/s; pipe ${data.download.pipe}; ${data.download.state}`);
+		alText('al-upload', `${data.upload.current_mbps.toFixed(1)} / ${data.upload.maximum_mbps.toFixed(1)} Mb/s; traffic ${data.upload.throughput_mbps.toFixed(1)} Mb/s; pipe ${data.upload.pipe}; ${data.upload.state}`);
 		alText('al-latency', `${data.current_rtt_ms.toFixed(2)} ms (${data.delay_delta_ms.toFixed(2)} ms above baseline)`);
 		alText('al-reflectors', data.healthy_reflectors);
 		alText('al-reason', data.last_reason);
+		alText('al-error', data.last_error || '-');
+		const reflectorList = document.getElementById('al-reflector-list');
+		reflectorList.replaceChildren();
+		for (const reflector of (data.reflectors || [])) {
+			const row = document.createElement('tr');
+			const values = [
+				reflector.address,
+				reflector.healthy ? 'Healthy' : 'Unavailable',
+				`${reflector.current_rtt_ms.toFixed(2)} ms`,
+				`${reflector.baseline_rtt_ms.toFixed(2)} ms`,
+				`${reflector.delay_delta_ms.toFixed(2)} ms`,
+				reflector.last_error || '-'
+			];
+			for (const value of values) {
+				const cell = document.createElement('td');
+				cell.textContent = value;
+				row.appendChild(cell);
+			}
+			reflectorList.appendChild(row);
+		}
 	} catch (error) {
 		errorBox.textContent = error.message;
 		errorBox.style.display = 'block';

@@ -55,8 +55,8 @@ function adaptive_limiter_validate(&$post, &$input_errors) {
 		$input_errors[] = gettext('At least one reflector is required.');
 	}
 	foreach ($reflectors as $reflector) {
-		if (!is_ipaddr($reflector)) {
-			$input_errors[] = sprintf(gettext('%s is not a valid reflector IP address.'), $reflector);
+		if (!is_ipaddrv4($reflector)) {
+			$input_errors[] = sprintf(gettext('%s is not a valid IPv4 reflector address.'), $reflector);
 		}
 	}
 
@@ -64,11 +64,36 @@ function adaptive_limiter_validate(&$post, &$input_errors) {
 	if ($threshold === null || $threshold <= 0 || $threshold > 1000) {
 		$input_errors[] = gettext('Latency threshold must be greater than 0 and no more than 1000 ms.');
 	}
-	foreach (['sample_interval', 'adjustment_delay'] as $field) {
+	foreach (['sample_interval', 'probe_interval', 'probe_timeout', 'adjustment_delay'] as $field) {
 		if (!preg_match('/^[0-9]+(?:ms|s|m)$/', $post[$field] ?? '')) {
 			$input_errors[] = sprintf(gettext('%s must be a duration such as 500ms, 1s, or 2m.'), $field);
 		}
 	}
+	$sample_ms = adaptive_limiter_duration_ms($post['sample_interval'] ?? '');
+	$probe_ms = adaptive_limiter_duration_ms($post['probe_interval'] ?? '');
+	$timeout_ms = adaptive_limiter_duration_ms($post['probe_timeout'] ?? '');
+	$adjustment_ms = adaptive_limiter_duration_ms($post['adjustment_delay'] ?? '');
+	if ($sample_ms !== null && ($sample_ms < 200 || $sample_ms > 60000)) {
+		$input_errors[] = gettext('Sample interval must be between 200ms and 1m.');
+	}
+	if ($probe_ms !== null && ($probe_ms < 100 || $probe_ms > 10000)) {
+		$input_errors[] = gettext('Probe interval must be between 100ms and 10s.');
+	}
+	if ($timeout_ms !== null && ($timeout_ms < 100 || $timeout_ms > 10000)) {
+		$input_errors[] = gettext('Probe timeout must be between 100ms and 10s.');
+	}
+	if ($sample_ms !== null && $adjustment_ms !== null &&
+	    ($adjustment_ms < $sample_ms || $adjustment_ms > 600000)) {
+		$input_errors[] = gettext('Adjustment delay must be at least the sample interval and no more than 10m.');
+	}
+}
+
+function adaptive_limiter_duration_ms($value) {
+	if (!preg_match('/^([0-9]+)(ms|s|m)$/', (string)$value, $matches)) {
+		return null;
+	}
+	$multiplier = ['ms' => 1, 's' => 1000, 'm' => 60000][$matches[2]];
+	return (int)$matches[1] * $multiplier;
 }
 
 function adaptive_limiter_daemon_config() {
@@ -92,6 +117,8 @@ function adaptive_limiter_daemon_config() {
 		'reflectors' => adaptive_limiter_parse_reflectors($settings['reflectors'] ?? '1.1.1.1,1.0.0.1,9.9.9.9,8.8.8.8'),
 		'latency_threshold_ms' => (float)($settings['latency_threshold'] ?? 15),
 		'sample_interval' => $settings['sample_interval'] ?? '1s',
+		'probe_interval' => $settings['probe_interval'] ?? '250ms',
+		'probe_timeout' => $settings['probe_timeout'] ?? '1s',
 		'adjustment_delay' => $settings['adjustment_delay'] ?? '2s',
 		'status_path' => ADAPTIVE_LIMITER_STATUS,
 	];

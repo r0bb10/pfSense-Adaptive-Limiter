@@ -17,6 +17,8 @@
   "reflectors": ["1.1.1.1", "1.0.0.1", "9.9.9.9", "8.8.8.8"],
   "latency_threshold_ms": 15,
   "sample_interval": "1s",
+  "probe_interval": "250ms",
+  "probe_timeout": "1s",
   "adjustment_delay": "2s",
   "status_path": "/var/run/adaptive-limiter/status.json"
 }

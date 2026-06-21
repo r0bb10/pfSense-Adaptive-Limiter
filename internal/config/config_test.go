@@ -18,6 +18,8 @@ func validConfig() Config {
 		Reflectors:       []string{"1.1.1.1", "9.9.9.9"},
 		LatencyThreshold: 15,
 		SampleInterval:   Duration{time.Second},
+		ProbeInterval:    Duration{250 * time.Millisecond},
+		ProbeTimeout:     Duration{time.Second},
 		AdjustmentDelay:  Duration{2 * time.Second},
 		StatusPath:       "/var/run/adaptive-limiter/status.json",
 	}

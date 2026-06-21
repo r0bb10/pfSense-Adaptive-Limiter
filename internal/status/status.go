@@ -18,20 +18,32 @@ type Direction struct {
 	State          string  `json:"state"`
 }
 
+type Reflector struct {
+	Address    string     `json:"address"`
+	Healthy    bool       `json:"healthy"`
+	CurrentMs  float64    `json:"current_rtt_ms"`
+	BaselineMs float64    `json:"baseline_rtt_ms"`
+	DeltaMs    float64    `json:"delay_delta_ms"`
+	LastSeen   *time.Time `json:"last_seen,omitempty"`
+	LastError  string     `json:"last_error,omitempty"`
+}
+
 type Status struct {
-	Version          string     `json:"version"`
-	UpdatedAt        time.Time  `json:"updated_at"`
-	StartedAt        time.Time  `json:"started_at"`
-	Mode             string     `json:"mode"`
-	WANInterface     string     `json:"wan_interface"`
-	Download         Direction  `json:"download"`
-	Upload           Direction  `json:"upload"`
-	BaselineRTTMs    float64    `json:"baseline_rtt_ms"`
-	CurrentRTTMs     float64    `json:"current_rtt_ms"`
-	DelayDeltaMs     float64    `json:"delay_delta_ms"`
-	HealthyReflector int        `json:"healthy_reflectors"`
-	LastAdjustmentAt *time.Time `json:"last_adjustment_at,omitempty"`
-	LastReason       string     `json:"last_reason"`
+	Version          string      `json:"version"`
+	UpdatedAt        time.Time   `json:"updated_at"`
+	StartedAt        time.Time   `json:"started_at"`
+	Mode             string      `json:"mode"`
+	WANInterface     string      `json:"wan_interface"`
+	Download         Direction   `json:"download"`
+	Upload           Direction   `json:"upload"`
+	BaselineRTTMs    float64     `json:"baseline_rtt_ms"`
+	CurrentRTTMs     float64     `json:"current_rtt_ms"`
+	DelayDeltaMs     float64     `json:"delay_delta_ms"`
+	HealthyReflector int         `json:"healthy_reflectors"`
+	Reflectors       []Reflector `json:"reflectors"`
+	LastError        string      `json:"last_error,omitempty"`
+	LastAdjustmentAt *time.Time  `json:"last_adjustment_at,omitempty"`
+	LastReason       string      `json:"last_reason"`
 }
 
 func WriteAtomic(path string, value Status) error {
