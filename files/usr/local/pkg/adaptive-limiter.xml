@@ -59,9 +59,9 @@
 		<field>
 			<fielddescr>WAN Interface</fielddescr>
 			<fieldname>wan_interface</fieldname>
-			<description>Runtime interface carrying PPPoE traffic.</description>
-			<type>input</type>
-			<default_value>pppoe0</default_value>
+			<description>Assigned pfSense interface carrying PPPoE traffic. The daemon uses the runtime interface behind this assignment.</description>
+			<type>interfaces_selection</type>
+			<default_value>wan</default_value>
 			<required/>
 		</field>
 		<field>

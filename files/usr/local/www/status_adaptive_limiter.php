@@ -71,7 +71,13 @@ async function refreshAdaptiveLimiter() {
 	const errorBox = document.getElementById('adaptive-limiter-error');
 	try {
 		const response = await fetch('/status_adaptive_limiter.php?ajax=1', {cache: 'no-store'});
-		const data = await response.json();
+		const body = await response.text();
+		let data;
+		try {
+			data = JSON.parse(body);
+		} catch (error) {
+			throw new Error(`Status endpoint returned HTTP ${response.status} instead of JSON`);
+		}
 		if (!response.ok || data.error) {
 			throw new Error(data.error || 'Status request failed');
 		}

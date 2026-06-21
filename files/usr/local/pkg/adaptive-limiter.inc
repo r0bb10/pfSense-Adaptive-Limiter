@@ -2,6 +2,7 @@
 
 require_once("functions.inc");
 require_once("globals.inc");
+require_once("interfaces.inc");
 require_once("service-utils.inc");
 require_once("util.inc");
 
@@ -12,6 +13,16 @@ const ADAPTIVE_LIMITER_STATUS = '/var/run/adaptive-limiter/status.json';
 
 function adaptive_limiter_settings() {
 	return config_get_path('installedpackages/adaptivelimiter/config/0', []);
+}
+
+function adaptive_limiter_real_interface($interface) {
+	if (function_exists('get_real_interface')) {
+		$real_interface = get_real_interface($interface);
+		if (!empty($real_interface)) {
+			return $real_interface;
+		}
+	}
+	return $interface;
 }
 
 function adaptive_limiter_number($value) {
@@ -98,10 +109,11 @@ function adaptive_limiter_duration_ms($value) {
 
 function adaptive_limiter_daemon_config() {
 	$settings = adaptive_limiter_settings();
+	$wan_interface = $settings['wan_interface'] ?? 'wan';
 	return [
 		'enabled' => (($settings['enable'] ?? '') === 'on'),
 		'monitor_only' => (($settings['monitor_only'] ?? 'on') === 'on'),
-		'wan_interface' => $settings['wan_interface'] ?? 'pppoe0',
+		'wan_interface' => adaptive_limiter_real_interface($wan_interface),
 		'download' => [
 			'pipe' => (int)($settings['download_pipe'] ?? 1),
 			'minimum_mbps' => (float)($settings['download_minimum'] ?? 500),
