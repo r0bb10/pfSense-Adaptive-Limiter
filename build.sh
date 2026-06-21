@@ -17,6 +17,10 @@ clean() {
 	rm -rf "${BUILD}"
 }
 
+json_escape() {
+	awk '{ gsub(/\\/, "\\\\"); gsub(/\t/, "\\t"); gsub(/"/, "\\\""); printf "%s\\n", $0 }'
+}
+
 stage() {
 	if [ ! -x "${BINARY}" ]; then
 		echo "Missing FreeBSD/amd64 binary: ${BINARY}" >&2
@@ -52,6 +56,9 @@ stage() {
 }
 
 manifest() {
+	post_install_script=$(sed "s/%%PORTNAME%%/${PORTNAME}/g" "${FILES}/pkg-install.in" | json_escape)
+	pre_deinstall_script=$(sed "s/%%PORTNAME%%/${PORTNAME}/g" "${FILES}/pkg-deinstall.in" | json_escape)
+
 	cat > "${BUILD}/+MANIFEST" <<EOF
 name: "${PORTNAME}"
 version: "${PORTVERSION}"
@@ -66,23 +73,12 @@ licenselogic: "single"
 licenses: ["ISC"]
 categories: ["net"]
 scripts: {
-  post-install: "#!/bin/sh\n/usr/local/bin/php -f /etc/rc.packages ${PORTNAME} POST-INSTALL\n/etc/rc.restart_webgui",
-  pre-deinstall: "#!/bin/sh\n/usr/local/bin/php -f /etc/rc.packages ${PORTNAME} DEINSTALL"
+  post-install: "${post_install_script}",
+  pre-deinstall: "${pre_deinstall_script}"
 }
 EOF
 
-	cat > "${BUILD}/plist" <<'EOF'
-/etc/inc/priv/adaptive-limiter.priv.inc
-etc/rc.d/adaptive_limiter
-pkg/adaptive-limiter.inc
-pkg/adaptive-limiter.xml
-sbin/adaptive-limiterd
-share/pfSense-pkg-adaptive-limiter/info.xml
-www/status_adaptive_limiter.php
-www/widgets/widgets/adaptive_limiter.widget.php
-@dir /etc/inc/priv
-@dir /etc/inc
-EOF
+	sed "s|%%DATADIR%%|share/${PORTNAME}|g" "${ROOT}/pkg-plist" > "${BUILD}/plist"
 }
 
 package() {

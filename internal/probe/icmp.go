@@ -2,7 +2,6 @@ package probe
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -131,7 +130,7 @@ func (p *ICMP) Probe(ctx context.Context, address string) (time.Duration, error)
 	for {
 		count, peer, err := p.connection.ReadFrom(buffer)
 		if err != nil {
-			if errors.Is(ctx.Err(), context.Canceled) {
+			if ctx.Err() != nil {
 				return 0, ctx.Err()
 			}
 			return 0, fmt.Errorf("receive ICMP reply from %s: %w", address, err)

@@ -144,16 +144,25 @@ func runWithDependencies(ctx context.Context, cfg config.Config, version string,
 			rates, limiterErr := deps.limiters.Rates(ctx)
 			if limiterErr != nil {
 				current.LastError = limiterErr.Error()
+				current.LastReason = "limiter rate read failed; monitoring will retry"
 				logger.Warn("limiter rate read failed", "error", limiterErr)
 			} else {
 				downloadRate, downloadFound := rates[cfg.Download.Pipe]
 				uploadRate, uploadFound := rates[cfg.Upload.Pipe]
 				if !downloadFound || !uploadFound {
 					current.LastError = fmt.Sprintf("configured pipes not found in dummynet: download=%d upload=%d", cfg.Download.Pipe, cfg.Upload.Pipe)
+					current.LastReason = "configured limiter pipe missing"
 					logger.Warn("configured limiter pipe missing", "download_found", downloadFound, "upload_found", uploadFound)
 				} else {
 					current.Download.CurrentMbps = downloadRate
 					current.Upload.CurrentMbps = uploadRate
+				}
+			}
+			if err == nil && limiterErr == nil {
+				if _, downloadFound := rates[cfg.Download.Pipe]; downloadFound {
+					if _, uploadFound := rates[cfg.Upload.Pipe]; uploadFound {
+						current.LastError = ""
+					}
 				}
 			}
 			if err := write(); err != nil {
