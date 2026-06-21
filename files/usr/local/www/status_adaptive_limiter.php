@@ -86,8 +86,8 @@ async function refreshAdaptiveLimiter() {
 		alText('al-mode', data.mode);
 		alText('al-interface', data.wan_interface);
 		alText('al-updated', data.updated_at);
-		alText('al-download', `${data.download.current_mbps.toFixed(1)} / ${data.download.maximum_mbps.toFixed(1)} Mb/s; traffic ${data.download.throughput_mbps.toFixed(1)} Mb/s; pipe ${data.download.pipe}; ${data.download.state}`);
-		alText('al-upload', `${data.upload.current_mbps.toFixed(1)} / ${data.upload.maximum_mbps.toFixed(1)} Mb/s; traffic ${data.upload.throughput_mbps.toFixed(1)} Mb/s; pipe ${data.upload.pipe}; ${data.upload.state}`);
+		alText('al-download', `${data.download.current_mbps.toFixed(1)} / ${data.download.maximum_mbps.toFixed(1)} Mb/s; traffic ${data.download.throughput_mbps.toFixed(1)} Mb/s; proposed ${data.download.proposed_mbps.toFixed(1)} Mb/s; ${data.download.action}; pipe ${data.download.pipe}; ${data.download.state}; ${data.download.reason}`);
+		alText('al-upload', `${data.upload.current_mbps.toFixed(1)} / ${data.upload.maximum_mbps.toFixed(1)} Mb/s; traffic ${data.upload.throughput_mbps.toFixed(1)} Mb/s; proposed ${data.upload.proposed_mbps.toFixed(1)} Mb/s; ${data.upload.action}; pipe ${data.upload.pipe}; ${data.upload.state}; ${data.upload.reason}`);
 		alText('al-latency', `${data.current_rtt_ms.toFixed(2)} ms (${data.delay_delta_ms.toFixed(2)} ms above baseline)`);
 		alText('al-reflectors', data.healthy_reflectors);
 		alText('al-reason', data.last_reason);

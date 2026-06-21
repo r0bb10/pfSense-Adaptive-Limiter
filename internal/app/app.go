@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/r0bb10/pfsense-adaptive-limiter/internal/config"
+	"github.com/r0bb10/pfsense-adaptive-limiter/internal/controller"
 	"github.com/r0bb10/pfsense-adaptive-limiter/internal/counters"
 	"github.com/r0bb10/pfsense-adaptive-limiter/internal/dummynet"
 	"github.com/r0bb10/pfsense-adaptive-limiter/internal/latency"
@@ -69,6 +70,7 @@ func runWithDependencies(ctx context.Context, cfg config.Config, version string,
 		now := deps.now().UTC()
 		current.UpdatedAt = now
 		updateLatencyStatus(&current, cfg.Reflectors, trackers, now, staleAfter)
+		updateControllerSimulation(&current, cfg)
 		return status.WriteAtomic(cfg.StatusPath, current)
 	}
 	if err := write(); err != nil {
@@ -131,8 +133,6 @@ func runWithDependencies(ctx context.Context, cfg config.Config, version string,
 					if ok {
 						current.Download.ThroughputMbps = download
 						current.Upload.ThroughputMbps = upload
-						current.Download.State = "monitoring"
-						current.Upload.State = "monitoring"
 						current.LastError = ""
 						current.LastReason = "read-only traffic and latency monitoring"
 					} else {
@@ -200,7 +200,10 @@ func initialStatus(cfg config.Config, version string, startedAt time.Time, mode 
 			BaselineMbps: cfg.Download.Baseline,
 			MaximumMbps:  cfg.Download.Maximum,
 			CurrentMbps:  0,
+			ProposedMbps: 0,
 			State:        "initializing",
+			Action:       "none",
+			Reason:       "waiting for live limiter rate",
 		},
 		Upload: status.Direction{
 			Pipe:         cfg.Upload.Pipe,
@@ -208,10 +211,45 @@ func initialStatus(cfg config.Config, version string, startedAt time.Time, mode 
 			BaselineMbps: cfg.Upload.Baseline,
 			MaximumMbps:  cfg.Upload.Maximum,
 			CurrentMbps:  0,
+			ProposedMbps: 0,
 			State:        "initializing",
+			Action:       "none",
+			Reason:       "waiting for live limiter rate",
 		},
 		LastReason: "waiting for traffic and latency samples",
 	}
+}
+
+func updateControllerSimulation(current *status.Status, cfg config.Config) {
+	if current.HealthyReflector == 0 {
+		setWaitingForLatency(&current.Download)
+		setWaitingForLatency(&current.Upload)
+		return
+	}
+
+	download := controller.Evaluate(cfg.Download, current.Download.CurrentMbps, current.Download.ThroughputMbps, current.DelayDeltaMs, cfg.LatencyThreshold)
+	current.Download.State = download.State
+	current.Download.Action = download.Action
+	current.Download.ProposedMbps = download.ProposedMbps
+	current.Download.Reason = download.Reason
+
+	upload := controller.Evaluate(cfg.Upload, current.Upload.CurrentMbps, current.Upload.ThroughputMbps, current.DelayDeltaMs, cfg.LatencyThreshold)
+	current.Upload.State = upload.State
+	current.Upload.Action = upload.Action
+	current.Upload.ProposedMbps = upload.ProposedMbps
+	current.Upload.Reason = upload.Reason
+}
+
+func setWaitingForLatency(direction *status.Direction) {
+	direction.ProposedMbps = direction.CurrentMbps
+	if direction.CurrentMbps <= 0 {
+		direction.State = controller.StateInitializing
+		direction.ProposedMbps = 0
+	} else {
+		direction.State = controller.StateHold
+	}
+	direction.Action = controller.ActionNone
+	direction.Reason = "waiting for healthy latency reflector"
 }
 
 func updateLatencyStatus(current *status.Status, order []string, trackers map[string]*latency.Reflector, now time.Time, staleAfter time.Duration) {

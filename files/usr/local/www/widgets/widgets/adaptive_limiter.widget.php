@@ -69,10 +69,16 @@ function adaptive_limiter_widget_body() {
 	    adaptive_limiter_widget_rate($download['current_mbps'] ?? 0) . ' / ' .
 	    adaptive_limiter_widget_rate($download['maximum_mbps'] ?? 0) .
 	    ' (traffic ' . adaptive_limiter_widget_rate($download['throughput_mbps'] ?? 0) . ')')];
+	$rows[] = [gettext('Download Proposal'), adaptive_limiter_widget_escape(
+	    adaptive_limiter_widget_rate($download['proposed_mbps'] ?? 0) . ' / ' .
+	    ($download['action'] ?? 'none') . ' / ' . ($download['reason'] ?? gettext('No proposal available')))];
 	$rows[] = [gettext('Upload'), adaptive_limiter_widget_escape(
 	    adaptive_limiter_widget_rate($upload['current_mbps'] ?? 0) . ' / ' .
 	    adaptive_limiter_widget_rate($upload['maximum_mbps'] ?? 0) .
 	    ' (traffic ' . adaptive_limiter_widget_rate($upload['throughput_mbps'] ?? 0) . ')')];
+	$rows[] = [gettext('Upload Proposal'), adaptive_limiter_widget_escape(
+	    adaptive_limiter_widget_rate($upload['proposed_mbps'] ?? 0) . ' / ' .
+	    ($upload['action'] ?? 'none') . ' / ' . ($upload['reason'] ?? gettext('No proposal available')))];
 	$rows[] = [gettext('Latency'), adaptive_limiter_widget_escape("{$current_rtt} ms (+{$delta_rtt} ms)")];
 	$rows[] = [gettext('State'), adaptive_limiter_widget_escape(
 	    'DL ' . ($download['state'] ?? 'unknown') . ' / UL ' . ($upload['state'] ?? 'unknown'))];

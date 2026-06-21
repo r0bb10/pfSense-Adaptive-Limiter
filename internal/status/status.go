@@ -14,8 +14,11 @@ type Direction struct {
 	BaselineMbps   float64 `json:"baseline_mbps"`
 	MaximumMbps    float64 `json:"maximum_mbps"`
 	CurrentMbps    float64 `json:"current_mbps"`
+	ProposedMbps   float64 `json:"proposed_mbps"`
 	ThroughputMbps float64 `json:"throughput_mbps"`
 	State          string  `json:"state"`
+	Action         string  `json:"action"`
+	Reason         string  `json:"reason"`
 }
 
 type Reflector struct {

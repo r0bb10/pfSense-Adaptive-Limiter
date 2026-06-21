@@ -91,6 +91,9 @@ func TestRunPublishesMeasurementsAndStops(t *testing.T) {
 				if got.Download.CurrentMbps != 2150 || got.Upload.CurrentMbps != 970 {
 					t.Fatalf("live limiter rates not published: %#v", got)
 				}
+				if got.Download.ProposedMbps == 0 || got.Upload.ProposedMbps == 0 || got.Download.Action == "" || got.Upload.Action == "" {
+					t.Fatalf("controller simulation not published: %#v", got)
+				}
 				break
 			}
 		}
