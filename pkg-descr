@@ -1,0 +1,4 @@
+Latency-aware dynamic bandwidth control for an existing pfSense
+dummynet/FQ_CODEL limiter pair.
+
+WWW: https://github.com/r0bb10/pfsense-adaptive-limiter

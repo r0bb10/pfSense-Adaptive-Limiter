@@ -1,0 +1,23 @@
+#!/bin/sh
+# shellcheck disable=SC2034
+
+# PROVIDE: adaptive_limiter
+# REQUIRE: NETWORKING
+# KEYWORD: shutdown
+
+# shellcheck source=/dev/null
+. /etc/rc.subr
+
+# rc.subr consumes these variables after this script defines them.
+name="adaptive_limiter"
+rcvar="adaptive_limiter_enable"
+pidfile="/var/run/adaptive-limiter.pid"
+procname="/usr/local/sbin/adaptive-limiterd"
+command="/usr/sbin/daemon"
+command_args="-f -S -p ${pidfile} -T adaptive-limiter ${procname} -config /usr/local/etc/adaptive-limiter/config.json"
+required_files="/usr/local/etc/adaptive-limiter/config.json"
+
+load_rc_config "${name}"
+: "${adaptive_limiter_enable:=NO}"
+
+run_rc_command "$1"

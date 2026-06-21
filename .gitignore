@@ -1,0 +1,5 @@
+PLAN.md
+build/
+dist/
+*.pkg
+*.txz

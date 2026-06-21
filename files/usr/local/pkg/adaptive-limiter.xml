@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE packagegui SYSTEM "../schema/packages.dtd">
+<?xml-stylesheet type="text/xsl" href="../xsl/package.xsl"?>
+<packagegui>
+	<name>adaptivelimiter</name>
+	<version>%%PKGVERSION%%</version>
+	<title>Services: Adaptive Limiter</title>
+	<addedit_string>Adaptive Limiter: changed settings</addedit_string>
+	<include_file>/usr/local/pkg/adaptive-limiter.inc</include_file>
+	<configpath>installedpackages->adaptivelimiter->config</configpath>
+	<aftersaveredirect>/pkg_edit.php?xml=adaptive-limiter.xml</aftersaveredirect>
+	<service>
+		<name>adaptive_limiter</name>
+		<rcfile>adaptive_limiter</rcfile>
+		<executable>adaptive-limiterd</executable>
+		<description>Adaptive Limiter daemon</description>
+	</service>
+	<menu>
+		<name>Adaptive Limiter</name>
+		<section>Services</section>
+		<configfile>adaptive-limiter.xml</configfile>
+		<url>/pkg_edit.php?xml=adaptive-limiter.xml</url>
+	</menu>
+	<menu>
+		<name>Adaptive Limiter</name>
+		<section>Status</section>
+		<configfile>adaptive-limiter.xml</configfile>
+		<url>/status_adaptive_limiter.php</url>
+	</menu>
+	<tabs>
+		<tab>
+			<text>Settings</text>
+			<url>/pkg_edit.php?xml=adaptive-limiter.xml</url>
+			<active/>
+		</tab>
+		<tab>
+			<text>Status</text>
+			<url>/status_adaptive_limiter.php</url>
+		</tab>
+	</tabs>
+	<fields>
+		<field>
+			<name>Service</name>
+			<type>listtopic</type>
+		</field>
+		<field>
+			<fielddescr>Enable</fielddescr>
+			<fieldname>enable</fieldname>
+			<description>Start Adaptive Limiter at boot and keep the service running.</description>
+			<type>checkbox</type>
+		</field>
+		<field>
+			<fielddescr>Monitor Only</fielddescr>
+			<fieldname>monitor_only</fieldname>
+			<description>Observe traffic and latency without changing limiter rates. Milestone 1 always enforces this mode.</description>
+			<type>checkbox</type>
+			<default_value>on</default_value>
+		</field>
+		<field>
+			<fielddescr>WAN Interface</fielddescr>
+			<fieldname>wan_interface</fieldname>
+			<description>Runtime interface carrying PPPoE traffic.</description>
+			<type>input</type>
+			<default_value>pppoe0</default_value>
+			<required/>
+		</field>
+		<field>
+			<name>Download</name>
+			<type>listtopic</type>
+		</field>
+		<field><fielddescr>Pipe</fielddescr><fieldname>download_pipe</fieldname><type>input</type><default_value>1</default_value><required/></field>
+		<field><fielddescr>Minimum (Mb/s)</fielddescr><fieldname>download_minimum</fieldname><type>input</type><default_value>500</default_value><required/></field>
+		<field><fielddescr>Baseline (Mb/s)</fielddescr><fieldname>download_baseline</fieldname><type>input</type><default_value>1800</default_value><required/></field>
+		<field><fielddescr>Maximum (Mb/s)</fielddescr><fieldname>download_maximum</fieldname><type>input</type><default_value>2500</default_value><required/></field>
+		<field>
+			<name>Upload</name>
+			<type>listtopic</type>
+		</field>
+		<field><fielddescr>Pipe</fielddescr><fieldname>upload_pipe</fieldname><type>input</type><default_value>2</default_value><required/></field>
+		<field><fielddescr>Minimum (Mb/s)</fielddescr><fieldname>upload_minimum</fieldname><type>input</type><default_value>250</default_value><required/></field>
+		<field><fielddescr>Baseline (Mb/s)</fielddescr><fieldname>upload_baseline</fieldname><type>input</type><default_value>800</default_value><required/></field>
+		<field><fielddescr>Maximum (Mb/s)</fielddescr><fieldname>upload_maximum</fieldname><type>input</type><default_value>1000</default_value><required/></field>
+		<field>
+			<name>Monitoring</name>
+			<type>listtopic</type>
+		</field>
+		<field>
+			<fielddescr>Reflectors</fielddescr>
+			<fieldname>reflectors</fieldname>
+			<description>Comma-separated IPv4 or IPv6 addresses used for latency probes.</description>
+			<type>input</type>
+			<default_value>1.1.1.1,1.0.0.1,9.9.9.9,8.8.8.8</default_value>
+			<required/>
+		</field>
+		<field><fielddescr>Latency Threshold (ms)</fielddescr><fieldname>latency_threshold</fieldname><type>input</type><default_value>15</default_value><required/></field>
+		<field><fielddescr>Sample Interval</fielddescr><fieldname>sample_interval</fieldname><description>Go duration, for example 1s.</description><type>input</type><default_value>1s</default_value><required/></field>
+		<field><fielddescr>Adjustment Delay</fielddescr><fieldname>adjustment_delay</fieldname><description>Minimum duration between limiter changes.</description><type>input</type><default_value>2s</default_value><required/></field>
+	</fields>
+	<custom_php_install_command>adaptive_limiter_install();</custom_php_install_command>
+	<custom_php_deinstall_command>adaptive_limiter_deinstall();</custom_php_deinstall_command>
+	<custom_php_validation_command>adaptive_limiter_validate($_POST, $input_errors);</custom_php_validation_command>
+	<custom_php_resync_config_command>adaptive_limiter_sync();</custom_php_resync_config_command>
+</packagegui>

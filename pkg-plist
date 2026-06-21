@@ -1,0 +1,9 @@
+/etc/inc/priv/adaptive-limiter.priv.inc
+etc/rc.d/adaptive_limiter
+pkg/adaptive-limiter.inc
+pkg/adaptive-limiter.xml
+sbin/adaptive-limiterd
+%%DATADIR%%/info.xml
+www/status_adaptive_limiter.php
+@dir /etc/inc/priv
+@dir /etc/inc

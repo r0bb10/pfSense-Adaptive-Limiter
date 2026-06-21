@@ -1,0 +1,88 @@
+name: Build and Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version in MAJOR.MINOR.PATCH form
+        required: true
+        default: 0.1.0
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Resolve version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$EVENT_NAME" = workflow_dispatch ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
+        with:
+          go-version: '1.26.x'
+
+      - name: Test and build daemon
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          go test ./...
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 \
+            go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" \
+            -o dist/adaptive-limiterd ./cmd/adaptive-limiterd
+
+      - name: Build package on FreeBSD 15
+        uses: vmactions/freebsd-vm@b84ab5559b5a1bb4b8ee2737d2506a16e1737636 # v1
+        env:
+          PORTVERSION: ${{ steps.version.outputs.value }}
+        with:
+          release: '15.0'
+          usesh: true
+          envs: PORTVERSION
+          run: |
+            chmod +x build.sh
+            ./build.sh package
+            cp build/pkg/*.pkg ./pfSense-pkg-adaptive-limiter.pkg
+
+      - name: Generate checksums
+        run: sha256sum pfSense-pkg-adaptive-limiter.pkg > SHA256SUMS
+
+      - name: Attest package
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: pfSense-pkg-adaptive-limiter.pkg
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pfSense-pkg-adaptive-limiter
+          path: |
+            pfSense-pkg-adaptive-limiter.pkg
+            SHA256SUMS
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          files: |
+            pfSense-pkg-adaptive-limiter.pkg
+            SHA256SUMS
+          generate_release_notes: true

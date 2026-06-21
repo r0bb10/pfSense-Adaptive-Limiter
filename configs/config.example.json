@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "monitor_only": true,
+  "wan_interface": "pppoe0",
+  "download": {
+    "pipe": 1,
+    "minimum_mbps": 500,
+    "baseline_mbps": 1800,
+    "maximum_mbps": 2500
+  },
+  "upload": {
+    "pipe": 2,
+    "minimum_mbps": 250,
+    "baseline_mbps": 800,
+    "maximum_mbps": 1000
+  },
+  "reflectors": ["1.1.1.1", "1.0.0.1", "9.9.9.9", "8.8.8.8"],
+  "latency_threshold_ms": 15,
+  "sample_interval": "1s",
+  "adjustment_delay": "2s",
+  "status_path": "/var/run/adaptive-limiter/status.json"
+}

@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
+        with:
+          go-version: '1.26.x'
+      - run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test -race ./...
+      - run: CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -trimpath -o /tmp/adaptive-limiterd ./cmd/adaptive-limiterd
+
+  package-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Shell lint
+        run: shellcheck build.sh files/pkg-install.in files/pkg-deinstall.in files/usr/local/etc/rc.d/adaptive_limiter
+      - name: PHP lint
+        run: find files -type f \( -name '*.php' -o -name '*.inc' \) -print0 | xargs -0 -n1 php -l
+      - name: XML parse
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          for path in pathlib.Path('files').rglob('*.xml'):
+              ET.parse(path)
+              print(path)
+          PY

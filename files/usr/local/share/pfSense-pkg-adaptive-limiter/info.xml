@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pfsensepkgs>
+	<package>
+		<name>Adaptive Limiter</name>
+		<internal_name>adaptive-limiter</internal_name>
+		<descr><![CDATA[Latency-aware dynamic bandwidth control for pfSense dummynet/FQ_CODEL limiters.]]></descr>
+		<pkginfolink>https://github.com/r0bb10/pfsense-adaptive-limiter</pkginfolink>
+		<version>%%PKGVERSION%%</version>
+		<configurationfile>adaptive-limiter.xml</configurationfile>
+	</package>
+</pfsensepkgs>
